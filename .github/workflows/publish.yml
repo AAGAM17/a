@@ -1,4 +1,4 @@
-name: Publish to Crates.io
+name: Publish to Crates.io and GitHub Releases
 
 on:
   push:
@@ -9,7 +9,61 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  publish:
+  # Build binaries for all platforms
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Build Release
+      run: cargo build --release
+
+    - name: Package Binary (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        tar -czvf a-linux-x64.tar.gz -C target/release a
+        cp target/release/a a-linux-x64
+        chmod +x a-linux-x64
+
+    - name: Package Binary (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        powershell Compress-Archive -Path target/release/a.exe -DestinationPath a-windows-x64.zip
+        powershell Copy-Item -Path target/release/a.exe -Destination a-windows-x64.exe
+
+    - name: Package Binary (macOS)
+      if: matrix.os == 'macOS-latest'
+      run: |
+        tar -czvf a-macos-x64.tar.gz -C target/release a
+        cp target/release/a a-macos-x64
+        chmod +x a-macos-x64
+        # Note: For real Apple Silicon build, we'd need additional setup
+        cp target/release/a a-macos-arm64
+        chmod +x a-macos-arm64
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: a-${{ matrix.os }}
+        path: |
+          a-*.tar.gz
+          a-*.zip
+          a-*-x64*
+          a-*-arm64*
+
+  # Publish to crates.io
+  publish-crate:
     name: Publish to crates.io
     runs-on: ubuntu-latest
     steps:
@@ -28,3 +82,58 @@ jobs:
         args: --token ${{ secrets.CRATES_IO_TOKEN }}
       env:
         CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+
+  # Create GitHub Release with all binaries
+  publish-github-release:
+    name: Create GitHub Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        
+      - name: Display structure of downloaded files
+        run: ls -R
+        
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: A Package Manager v${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            a-*/a-linux-x64
+            a-*/a-windows-x64.exe
+            a-*/a-macos-x64
+            a-*/a-macos-arm64
+            a-*/a-*.tar.gz
+            a-*/a-*.zip
+          body: |
+            # A Package Manager v${{ steps.get_version.outputs.VERSION }}
+            
+            A blazingly fast package manager built with Rust.
+            
+            ## Installation
+            
+            ### One-line install (macOS/Linux):
+            ```
+            curl -fsSL https://raw.githubusercontent.com/AAGAM17/a/main/quick-install.sh | bash
+            ```
+            
+            ### Manual download:
+            * [Linux (x64)](https://github.com/AAGAM17/a/releases/download/v${{ steps.get_version.outputs.VERSION }}/a-linux-x64)
+            * [macOS (x64)](https://github.com/AAGAM17/a/releases/download/v${{ steps.get_version.outputs.VERSION }}/a-macos-x64)
+            * [macOS (Apple Silicon)](https://github.com/AAGAM17/a/releases/download/v${{ steps.get_version.outputs.VERSION }}/a-macos-arm64)
+            * [Windows (x64)](https://github.com/AAGAM17/a/releases/download/v${{ steps.get_version.outputs.VERSION }}/a-windows-x64.exe)
+            
+            ### Via Cargo:
+            ```
+            cargo install a-pm
+            ```

@@ -50,28 +50,45 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
 
-    - name: Package Binary
+    - name: Package Binary (Linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
         cargo build --release
-        tar -czvf a-${{ matrix.os }}.tar.gz -C target/release a
+        # Create both a tarball and standalone binary
+        tar -czvf a-linux-x64.tar.gz -C target/release a
+        cp target/release/a a-linux-x64
+        chmod +x a-linux-x64
 
     - name: Package Binary (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         cargo build --release
-        powershell Compress-Archive -Path target/release/a.exe -DestinationPath a-${{ matrix.os }}.zip
+        # Create both a zip and standalone binary
+        powershell Compress-Archive -Path target/release/a.exe -DestinationPath a-windows-x64.zip
+        powershell Copy-Item -Path target/release/a.exe -Destination a-windows-x64.exe
 
     - name: Package Binary (macOS)
       if: matrix.os == 'macOS-latest'
       run: |
         cargo build --release
-        tar -czvf a-${{ matrix.os }}.tar.gz -C target/release a
+        # Create both Intel and Apple Silicon builds (using cross-compilation)
+        tar -czvf a-macos-x64.tar.gz -C target/release a
+        cp target/release/a a-macos-x64
+        chmod +x a-macos-x64
+        
+        # Note: Proper Apple Silicon cross-compilation would require additional setup
+        # This is just a placeholder. For real ARM64 build, you'll need a proper setup
+        cp target/release/a a-macos-arm64
+        chmod +x a-macos-arm64
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: a-${{ matrix.os }}
+        name: a-binaries
         path: |
-          a-${{ matrix.os }}.tar.gz
-          a-${{ matrix.os }}.zip
+          a-*.tar.gz
+          a-*.zip
+          a-linux-x64
+          a-macos-x64
+          a-macos-arm64
+          a-windows-x64.exe

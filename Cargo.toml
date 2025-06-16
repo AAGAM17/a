@@ -2,12 +2,12 @@
 name = "a-pm"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Aagam Shah <aagam@example.com>"]
 description = "A blazingly fast package manager built with Rust"
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/yourusername/a"
-repository = "https://github.com/yourusername/a"
+homepage = "https://github.com/AAGAM17/a"
+repository = "https://github.com/AAGAM17/a"
 keywords = ["package-manager", "npm", "yarn", "bun", "javascript"]
 categories = ["command-line-utilities", "development-tools"]
 

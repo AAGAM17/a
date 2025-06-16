@@ -4,19 +4,58 @@ A lightweight, blazingly fast package manager built with Rust. It's designed to 
 
 ## Installation
 
+### One-Line Installation (macOS, Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AAGAM17/a/main/quick-install.sh | bash
+```
+
 ### Via Cargo
+
+If you have Rust and Cargo installed:
 
 ```bash
 cargo install a-pm
 ```
 
-### From Source
+### Manual Installation
+
+If the above methods don't work, you can install manually:
 
 ```bash
+# Clone the repository
+git clone https://github.com/AAGAM17/a.git
+cd a
+
+# Build from source
+cargo build --release
+
+# Option 1: Copy to a location in your PATH
+cp target/release/a ~/.local/bin/  # or /usr/local/bin/ with sudo
+
+# Option 2: Add to your PATH
+mkdir -p ~/.a-pm/bin
+cp target/release/a ~/.a-pm/bin/
+echo 'export PATH="$PATH:$HOME/.a-pm/bin"' >> ~/.bashrc  # or ~/.zshrc
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+### Windows Installation
+
+1. Install [Rust](https://www.rust-lang.org/tools/install) if not already installed
+2. Run in Command Prompt or PowerShell:
+
+```powershell
+cargo install a-pm
+```
+
+Or build from source:
+
+```powershell
 git clone https://github.com/AAGAM17/a.git
 cd a
 cargo build --release
-# The binary will be available at ./target/release/a
+# The binary will be available at .\target\release\a.exe
 ```
 
 ## Usage
@@ -97,6 +136,18 @@ a cache clear
 - 🔄 **Concurrent Downloads**: Installs packages in parallel
 - 📝 **Smart Caching**: Optimizes repeated installations
 - 🔒 **Lockfile Support**: Ensures reproducible installations
+
+## Updating
+
+To update to the latest version:
+
+```bash
+# One-line update
+curl -fsSL https://raw.githubusercontent.com/AAGAM17/a/main/update.sh | bash
+
+# If installed via cargo
+cargo install a-pm --force
+```
 
 ## License
 

@@ -10,7 +10,7 @@ TMP_DIR=$(mktemp -d)
 cd "$TMP_DIR"
 
 # Download the installer
-curl -fsSL https://raw.githubusercontent.com/yourusername/a/main/install.sh -o install.sh
+curl -fsSL https://raw.githubusercontent.com/AAGAM17/a/main/install.sh -o install.sh
 chmod +x install.sh
 
 # Run the installer
