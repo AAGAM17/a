@@ -13,7 +13,7 @@ cargo install a-pm
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/a.git
+git clone https://github.com/AAGAM17/a.git
 cd a
 cargo build --release
 # The binary will be available at ./target/release/a
